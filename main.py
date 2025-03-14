@@ -31,6 +31,8 @@ from src.webscraping.yahoo_news_scraper import YahooNewsScraper
 from src.firestore.firestore_adapter import FirestoreAdapter
 from src.webscraping.web_scraping import WebScraper
 
+load_dotenv()
+
 # グローバルインスタンスの初期化
 openai_adapter = OpenaiAdapter()
 web_search = WebSearch()
@@ -38,14 +40,21 @@ yahoo_news_scraper = YahooNewsScraper()
 web_scraper = WebScraper()
 firestore_adapter = FirestoreAdapter()
 
-# 認証情報のパスを設定
+# ※Firebaseのローカル環境での認証と初期化
 credentials_path = str(Path("secret-key") / f"{os.getenv('CLOUD_FIRESTORE_JSON')}.json")
+database_id = str(os.getenv('DATABASE_ID'))
 cred = credentials.Certificate(credentials_path)
-
-# Firebase初期化（既に初期化されていない場合のみ）
+# ※既に初期化されていない場合のみ
 if not firebase_admin._apps:
     app = firebase_admin.initialize_app(cred)
-db = firestore.client()
+if database_id:
+    db = firestore.client(database_id)
+else:
+    db = firestore.client()
+
+# ※FirestoreのGoogle Cloud環境での認証と初期化
+# app = firebase_admin.initialize_app()
+# db = firestore.client()
 
 
 """処理の詳細
@@ -110,7 +119,7 @@ def scrape_news_articles() -> dict:
     """
     logger = logging.getLogger(__name__)
     logger.info("Starting to scrape Yahoo News categories...")
-    return yahoo_news_scraper.scrape_all_categories(save_results=True)
+    return yahoo_news_scraper.scrape_all_categories(save_results=False)
 
 def filter_new_articles(articles_by_category: dict) -> list:
     """
@@ -1291,93 +1300,6 @@ def process_and_save_articles(analyzed_results: dict, logger: logging.Logger):
         firestore_adapter.save_essential_info_batch(db, articles_with_periods)
         logger.info("記事の保存が完了しました")
 
-def display_analysis_results(processed_results: dict, logger: logging.Logger):
-    """
-    処理結果を表示します
-
-    Args:
-        processed_results (dict): 処理済みの記事グループ情報
-        logger (logging.Logger): ロガーインスタンス
-    """
-    logger.info("\n処理結果のサマリー：")
-    
-    for group_name, group_info in processed_results["groups"].items():
-        if group_name == "others":
-            logger.info("\n【個別記事グループ】")
-            for article in group_info["processed_articles"]:
-                logger.info(f"\nメイン記事：{article['main_article']['title']}")
-                logger.info(f"URL：{article['main_article']['url']}")
-                
-                if "analysis" in article:
-                    logger.info("\n分析結果:")
-                    logger.info(f"判断理由: {article['analysis']['reasoning']}")
-                    if "extracted_info" in article["analysis"]:
-                        logger.info("\n抽出された情報:")
-                        logger.info(article["analysis"]["extracted_info"])
-                
-                if article['pickup_articles']:
-                    logger.info(f"\n関連記事（{len(article['pickup_articles'])}件）：")
-                    for pickup in article['pickup_articles']:
-                        logger.info(f"- {pickup['title']}")
-                        logger.info(f"  URL：{pickup['url']}")
-                else:
-                    logger.info("\n関連記事：なし")
-                
-                if "combined_content" in article:
-                    logger.info("\n記事内容の要約：")
-                    logger.info(article["combined_content"])
-                
-                if "detail_article" in article:
-                    logger.info("\n生成された詳細情報記事：")
-                    logger.info(f"タイトル：{article['detail_article']['title']}")
-                    logger.info(f"本文：\n{article['detail_article']['content']}")
-                    logger.info(f"アイスブレイクとしての活用方法：\n{article['detail_article']['usage_example']}")
-                    if "retention_period_days" in article["detail_article"]:
-                        logger.info(f"保持期間：{article['detail_article']['retention_period_days']}日")
-                
-                logger.info("-" * 80)
-        else:
-            logger.info(f"\n【{group_info['title']}】")
-            if "analysis" in group_info:
-                logger.info("\n分析結果:")
-                logger.info(f"判断理由: {group_info['analysis']['reasoning']}")
-                if "extracted_info" in group_info["analysis"]:
-                    logger.info("\n抽出された情報:")
-                    logger.info(group_info["analysis"]["extracted_info"])
-            
-            logger.info("\n記事一覧：")
-            for article in group_info["processed_articles"]:
-                logger.info(f"\nメイン記事：{article['main_article']['title']}")
-                logger.info(f"URL：{article['main_article']['url']}")
-                
-                if article['pickup_articles']:
-                    logger.info(f"\n関連記事（{len(article['pickup_articles'])}件）：")
-                    for pickup in article['pickup_articles']:
-                        logger.info(f"- {pickup['title']}")
-                        logger.info(f"  URL：{pickup['url']}")
-                else:
-                    logger.info("\n関連記事：なし")
-            
-            if "combined_content" in group_info:
-                logger.info("\n記事内容の要約：")
-                logger.info(group_info["combined_content"])
-            
-            if "detail_article" in group_info:
-                logger.info("\n生成された詳細情報記事：")
-                logger.info(f"タイトル：{group_info['detail_article']['title']}")
-                logger.info(f"本文：\n{group_info['detail_article']['content']}")
-                logger.info(f"アイスブレイクとしての活用方法：\n{group_info['detail_article']['usage_example']}")
-                if "retention_period_days" in group_info["detail_article"]:
-                    logger.info(f"保持期間：{group_info['detail_article']['retention_period_days']}日")
-            
-            logger.info("-" * 80)
-
-# contentに日付や情報源、時系列の情報が含まれていないため、信頼感の無い情報にみえる
-# 保険に活用できる話題かどうかの見積もりが甘く、飛躍した関連性を見出してい待っている
-# referenced_articlesにデータが保存されていない　→　修正済み。テスト未実施
-# usage_exampleが「どういった顧客に」の部分を「社会保障に興味がある顧客」のように具体性を伴わない手抜きの情報にしている
-# →　各プロンプトの見直しが必要
-
 def main():
     """メイン処理"""
     setup_logging()
@@ -1404,10 +1326,6 @@ def main():
                     
                     # 記事グループの分析
                     analyzed_results = analyze_article_groups(processed_results, logger)
-                    
-
-                    # 結果の表示
-                    # display_analysis_results(analyzed_results, logger)
                     
                     # 記事の処理と保存
                     process_and_save_articles(analyzed_results, logger)
