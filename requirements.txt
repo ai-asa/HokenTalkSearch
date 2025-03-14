@@ -1,0 +1,15 @@
+beautifulsoup4>=4.10.0
+functions-framework==3.*
+requests
+openai
+python-dotenv
+firebase-admin==6.3.0
+configparser
+tiktoken
+pandas
+# googleapiclient使用のために2.161.0にアップデート後方互換性は未検証
+google-api-python-client==2.161.0
+stripe
+chardet
+duckduckgo-search
+google-custom-search
