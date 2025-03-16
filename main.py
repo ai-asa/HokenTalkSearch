@@ -2,7 +2,6 @@
 import json
 import logging
 import os
-import time
 from pathlib import Path
 from typing import List, Optional
 
@@ -41,21 +40,15 @@ web_scraper = WebScraper()
 firestore_adapter = FirestoreAdapter()
 
 # ※Firebaseのローカル環境での認証と初期化
-credentials_path = str(Path("secret-key") / f"{os.getenv('CLOUD_FIRESTORE_JSON')}.json")
-database_id = str(os.getenv('DATABASE_ID'))
-cred = credentials.Certificate(credentials_path)
+# credentials_path = str(Path("secret-key") / f"{os.getenv('CLOUD_FIRESTORE_JSON')}.json")
+# cred = credentials.Certificate(credentials_path)
 # ※既に初期化されていない場合のみ
 if not firebase_admin._apps:
-    app = firebase_admin.initialize_app(cred)
-if database_id:
-    db = firestore.client(database_id)
-else:
-    db = firestore.client()
-
-# ※FirestoreのGoogle Cloud環境での認証と初期化
-# app = firebase_admin.initialize_app()
-# db = firestore.client()
-
+    # ローカル環境での認証
+    # app = firebase_admin.initialize_app(cred)
+    # Google Cloud環境での認証
+    app = firebase_admin.initialize_app()
+db = firestore.client()
 
 """処理の詳細
 ・Yahooニュースの国内、国際、経済の3トピックの記事名と概要URLを全件取得
