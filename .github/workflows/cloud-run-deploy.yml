@@ -18,6 +18,13 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
+    - name: 'Login to Artifact Registry'
+      uses: 'docker/login-action@v3'
+      with:
+        registry: asia.gcr.io
+        username: _json_key
+        password: ${{ secrets.GCP_SA_KEY }}
+
     - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v2
       with:
