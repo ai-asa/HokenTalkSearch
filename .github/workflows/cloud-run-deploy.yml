@@ -41,5 +41,6 @@ jobs:
           --platform managed \
           --allow-unauthenticated \
           --set-secrets="OPENAI_API_KEY=OPENAI_API_KEY:latest" \
-          --set-secrets="GOOGLE_SEARCH_API_KEY=GOOGLE_SEARCH_API_KEY:latest" \
-          --set-secrets="GOOGLE_SEARCH_ENGINE_ID=GOOGLE_SEARCH_ENGINE_ID:latest" 
+          --set-secrets="GOOGLE_API_KEY=GOOGLE_API_KEY:latest" \
+          --set-secrets="GOOGLE_CSE_ID=GOOGLE_CSE_ID:latest" \
+          --set-secrets="BING_API_KEY=BING_API_KEY:latest"
