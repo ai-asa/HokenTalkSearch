@@ -47,7 +47,7 @@ jobs:
         IMAGE_URI="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPOSITORY_NAME }}/${{ env.SERVICE_NAME }}:${{ github.sha }}"
         gcloud run deploy $SERVICE_NAME \
           --image "$IMAGE_URI" \
-          --region $REGION \
+          --region ${{ env.REGION }} \
           --platform managed \
           --allow-unauthenticated \
           --set-secrets="OPENAI_API_KEY=OPENAI_API_KEY:latest" \
