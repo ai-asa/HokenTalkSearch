@@ -41,14 +41,14 @@ web_scraper = WebScraper()
 firestore_adapter = FirestoreAdapter()
 
 # ※Firebaseのローカル環境での認証と初期化
-credentials_path = str(Path("secret-key") / f"{os.getenv('CLOUD_FIRESTORE_JSON')}.json")
-cred = credentials.Certificate(credentials_path)
+# credentials_path = str(Path("secret-key") / f"{os.getenv('CLOUD_FIRESTORE_JSON')}.json")
+# cred = credentials.Certificate(credentials_path)
 # ※既に初期化されていない場合のみ
 if not firebase_admin._apps:
     # ローカル環境での認証
-    app = firebase_admin.initialize_app(cred)
+    # app = firebase_admin.initialize_app(cred)
     # Google Cloud環境での認証
-    # app = firebase_admin.initialize_app()
+    app = firebase_admin.initialize_app()
 db = firestore.client()
 
 """処理の詳細
