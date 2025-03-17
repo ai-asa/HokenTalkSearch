@@ -13,3 +13,4 @@ stripe
 chardet
 duckduckgo-search
 google-custom-search
+flask

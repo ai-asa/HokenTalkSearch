@@ -1,6 +1,7 @@
 # 標準ライブラリ
 import json
 import logging
+from flask import Flask, request, jsonify
 import os
 from pathlib import Path
 from typing import List, Optional
@@ -40,14 +41,14 @@ web_scraper = WebScraper()
 firestore_adapter = FirestoreAdapter()
 
 # ※Firebaseのローカル環境での認証と初期化
-# credentials_path = str(Path("secret-key") / f"{os.getenv('CLOUD_FIRESTORE_JSON')}.json")
-# cred = credentials.Certificate(credentials_path)
+credentials_path = str(Path("secret-key") / f"{os.getenv('CLOUD_FIRESTORE_JSON')}.json")
+cred = credentials.Certificate(credentials_path)
 # ※既に初期化されていない場合のみ
 if not firebase_admin._apps:
     # ローカル環境での認証
-    # app = firebase_admin.initialize_app(cred)
+    app = firebase_admin.initialize_app(cred)
     # Google Cloud環境での認証
-    app = firebase_admin.initialize_app()
+    # app = firebase_admin.initialize_app()
 db = firestore.client()
 
 """処理の詳細
@@ -1327,5 +1328,26 @@ def main():
         logger.error(f"Error occurred: {str(e)}", exc_info=True)
         raise
 
+# Flaskアプリケーションの初期化
+flask_app = Flask(__name__)
+
+@flask_app.route("/", methods=["GET"])
+def health_check():
+    """ヘルスチェック用エンドポイント"""
+    return jsonify({"status": "healthy"}), 200
+
+@flask_app.route("/run", methods=["POST"])
+def run_scraping():
+    """スクレイピング実行用エンドポイント"""
+    logger = logging.getLogger(__name__)
+    try:
+        main()
+        return jsonify({"status": "success"}), 200
+    except Exception as e:
+        logger.error(f"Error in run_scraping: {str(e)}", exc_info=True)
+        return jsonify({"status": "error", "message": str(e)}), 500
+
 if __name__ == "__main__":
-    main() 
+    # ローカル開発環境での実行
+    port = int(os.getenv("PORT", 8080))
+    flask_app.run(host="0.0.0.0", port=port) 
