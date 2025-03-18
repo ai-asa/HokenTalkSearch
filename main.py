@@ -1351,3 +1351,4 @@ if __name__ == "__main__":
     # ローカル開発環境での実行
     port = int(os.getenv("PORT", 8080))
     flask_app.run(host="0.0.0.0", port=port) 
+    # テストコメント
