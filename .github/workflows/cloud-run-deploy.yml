@@ -27,17 +27,6 @@ jobs:
       uses: google-github-actions/auth@v2
       with:
         credentials_json: ${{ secrets.GCP_SA_KEY }}
-
-    - name: 'Login to Artifact Registry'
-      uses: 'docker/login-action@v3'
-      with:
-        registry:  ${{ env.REGION }}-docker.pkg.dev
-        username: _json_key
-        password: ${{ secrets.GCP_SA_KEY }}
-
-    - name: Set up Cloud SDK
-      uses: google-github-actions/setup-gcloud@v2
-      with:
         project_id: ${{ env.PROJECT_ID }}
 
     - name: Build and Push Container
