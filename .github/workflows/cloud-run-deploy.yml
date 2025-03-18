@@ -28,6 +28,7 @@ jobs:
       with:
         credentials_json: ${{ secrets.GCP_SA_KEY }}
         project_id: ${{ env.PROJECT_ID }}
+        token_format: 'access_token'
 
     - name: Build and Push Container
       run: |-
