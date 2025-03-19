@@ -9,7 +9,7 @@ env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }} # GCPのプロジェクトID
   REGION: asia-northeast1  # 東京リージョン
   SERVICE_NAME: hoken-talk-search  # Cloud Runのサービス名
-  REPOSITORY_NAME: hoken-talk-search  # Artifact Registryのリポジトリ名
+  REPOSITORY_NAME: hoken-talk-search  # Artifact Registryのリポジトリ
 
 permissions:
   contents: 'read'
